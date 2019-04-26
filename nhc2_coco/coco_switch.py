@@ -39,7 +39,7 @@ class CoCoSwitch(CoCoEntity):
                and 'Status' in property_object_with_status \
                and self._state != (status_prop_in_object_is_on(property_object_with_status))
 
-    def _change_status(self, status: str):
+    def _change_status(self, status):
         command = {"Method": "devices.control", "Params": [
             {"Devices": [{"Properties": [{"Status": status}], "Uuid": self._uuid}]}
         ]}

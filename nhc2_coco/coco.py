@@ -86,15 +86,15 @@ class CoCo:
                     self._lights_callback(self._lights)
                     self._switches_callback(self._switches)
                 return
-            if topic == (self._profile_creation_id + MQTT_TOPIC_SUFFIX_SYS_EVT) and response[
-                'Method'] == 'systeminfo.published':
+            if topic == (self._profile_creation_id + MQTT_TOPIC_SUFFIX_SYS_EVT) \
+                    and response['Method'] == 'systeminfo.published':
                 # If the connected controller publishes sysinfo... we expect something to have changed.
                 client.subscribe(self._profile_creation_id + MQTT_TOPIC_SUFFIX_RSP, qos=1)
                 client.publish(self._profile_creation_id + MQTT_TOPIC_SUFFIX_CMD, '{"Method":"devices.list"}')
                 return
             if topic == (self._profile_creation_id + MQTT_TOPIC_SUFFIX_EVT) \
                     and (response['Method'] == 'devices.status' or response['Method'] == 'devices.changed'):
-                devices = self._get_devices(response)
+                devices = extract_devices(response)
                 for device in devices:
                     if device['Uuid'] and self._device_callbacks[device['Uuid']]:
                         self._device_callbacks[device['Uuid']]['callbackHolder'](device)
