@@ -90,7 +90,7 @@ class CoCo:
                     and response['Method'] == 'systeminfo.published':
                 # If the connected controller publishes sysinfo... we expect something to have changed.
                 client.subscribe(self._profile_creation_id + MQTT_TOPIC_SUFFIX_RSP, qos=1)
-                client.publish(self._profile_creation_id + MQTT_TOPIC_SUFFIX_CMD, '{"Method":"devices.list"}')
+                client.publish(self._profile_creation_id + MQTT_TOPIC_SUFFIX_CMD, '{"Method":"devices.list"}', 1)
                 return
             if topic == (self._profile_creation_id + MQTT_TOPIC_SUFFIX_EVT) \
                     and (response['Method'] == 'devices.status' or response['Method'] == 'devices.changed'):

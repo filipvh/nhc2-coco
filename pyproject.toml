@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nhc2-coco"
-version = "0.0.4"
+version = "0.0.6"
 description = "Python controller for a Niko Home Control II installation"
 license = "MIT"
 authors = ["filipvh"]
