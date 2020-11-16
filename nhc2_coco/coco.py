@@ -15,7 +15,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class CoCo:
-    def __init__(self, address, username, password, port=8883, ca_path=None):
+    def __init__(self, address, username, password, port=8883, ca_path=None, switches_as_lights=False):
         if ca_path is None:
             ca_path = os.path.dirname(os.path.realpath(__file__)) + '/coco_ca.pem'
         client = mqtt.Client(protocol=MQTT_PROTOCOL, transport=MQTT_TRANSPORT)
@@ -28,6 +28,7 @@ class CoCo:
         self._profile_creation_id = username
         self._all_devices = None
         self._device_callbacks = {}
+        self._switches_as_lights = switches_as_lights
         self._lights = None
         self._lights_callback = Callable[[List[CoCoLight]], None]
         self._switches = None
@@ -57,8 +58,15 @@ class CoCo:
                         if x['Uuid'] not in existing_uuids:
                             self._device_callbacks[x['Uuid']] = {'callbackHolder': None, 'entity': None}
 
-                    lights = [x for x in devices if x['Model'] == 'light']
-                    switches = [x for x in devices if x['Model'] == 'switched-generic']
+                    lights = [x for x in devices if
+                              (x['Model'] == 'light')
+                              or (self._switches_as_lights
+                                  and (x['Model'] == 'switched-generic'))
+                              ]
+                    if not self._switches_as_lights:
+                        switches = [x for x in devices if x['Model'] == 'switched-generic']
+                    else:
+                        switches = []
 
                     self._lights = []
                     for light in lights:
