@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nhc2-coco"
-version = "0.0.8"
+version = "0.1.2"
 description = "Python controller for a Niko Home Control II installation"
 license = "MIT"
 authors = ["filipvh"]
@@ -11,5 +11,7 @@ keywords = ['niko', 'coco', 'nhc', 'nhc2', 'home', 'control', 'II']
 
 [tool.poetry.dependencies]
 paho-mqtt = "1.4.0"
+get-mac = "0.8.2"
+netifaces = "0.10.9"
 
 [tool.poetry.dev-dependencies]

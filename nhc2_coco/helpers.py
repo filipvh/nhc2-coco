@@ -15,6 +15,16 @@ def extract_status_object(dev):
     else:
         return None
 
+def extract_brightness_object(dev):
+    if dev and 'Properties' in dev:
+        properties = dev['Properties']
+        if properties:
+            return next(filter((lambda x: x and 'Brightness' in x), properties), None)
+        else:
+            return None
+    else:
+        return None
+
 
 def status_prop_in_object_is_on(property_object_with_status):
     return property_object_with_status['Status'] == 'On'

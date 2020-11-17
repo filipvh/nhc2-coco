@@ -30,11 +30,11 @@ class CoCo:
         self._device_callbacks = {}
         self._switches_as_lights = switches_as_lights
         self._lights = None
-        self._lights_callback = Callable[[List[CoCoLight]], None]
+        self._lights_callback = lambda x: None
         self._switches = None
-        self._switches_callback = Callable[[List[CoCoSwitch]], None]
+        self._switches_callback = lambda x: None
         self._system_info = None
-        self._system_info_callback = Callable[[List[CoCoSwitch]], None]
+        self._system_info_callback = lambda x: None
 
     def __del__(self):
         self._client.disconnect()
@@ -54,17 +54,19 @@ class CoCo:
                     devices = extract_devices(response)
                     existing_uuids = list(self._device_callbacks.keys())
 
+                    valid_switches = ['socket', 'switched-generic']
+                    valid_lights = ['light', 'dimmer']
                     for x in devices:
                         if x['Uuid'] not in existing_uuids:
                             self._device_callbacks[x['Uuid']] = {'callbackHolder': None, 'entity': None}
 
                     lights = [x for x in devices if
-                              (x['Model'] == 'light')
+                              (x['Model'] in valid_lights)
                               or (self._switches_as_lights
-                                  and (x['Model'] == 'switched-generic'))
+                                  and (x['Model'] in valid_switches))
                               ]
                     if not self._switches_as_lights:
-                        switches = [x for x in devices if x['Model'] == 'switched-generic']
+                        switches = [x for x in devices if x['Model'] in valid_switches]
                     else:
                         switches = []
 
