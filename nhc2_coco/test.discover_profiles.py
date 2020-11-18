@@ -23,6 +23,7 @@ print('')
 for i, result in enumerate(results):
     print_u('Controler #%d' % i)
     print(' IP: %s' % result[0])
+    print(' host: %s' % result[3])
     print(' MAC: %s' % result[1])
     profiles = result[2]
     print(' %d profile(s) found.' % (len(profiles)))

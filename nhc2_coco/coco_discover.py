@@ -23,8 +23,9 @@ class CoCoDiscover:
         self._thread = threading.Thread(target=self._scan_for_nhc)
         self._on_discover = on_discover
         self._on_done = on_done
-        self._scan_time = 5
         self._thread.start()
+        # If we discover one, we don't want to keep looking too long...
+        self._discovered_at_least_one = False
 
     def _get_broadcast_ips(self):
         interfaces = netifaces.interfaces()
@@ -45,15 +46,17 @@ class CoCoDiscover:
         server.setblocking(0)
         loops = 0
 
-        while loops < 2:
+        while loops < 200 and ((not self._discovered_at_least_one) or loops < 20):
             loops = loops + 1
-            ready = select.select([server], [], [], self._scan_time)
+            ready = select.select([server], [], [], 0.01)
             if ready[0]:
                 data, addr = server.recvfrom(4096)
                 if data[0] == 0x44:  # NHC2 Header
                     is_nhc2 = (len(data) >= 16) and (data[15] == 0x02)
                     mac = get_mac_address(ip=addr[0])
                     if self._on_discover:
+                        self._discovered_at_least_one = True
                         self._on_discover(addr[0], mac, is_nhc2)
         server.close()
         self._on_done()
+        print(loops)

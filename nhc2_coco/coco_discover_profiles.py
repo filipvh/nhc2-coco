@@ -1,4 +1,5 @@
 import asyncio
+import socket
 
 from nhc2_coco.coco_discover import CoCoDiscover
 from nhc2_coco.coco_profiles import CoCoProfiles
@@ -29,7 +30,11 @@ class CoCoDiscoverProfiles:
 
     def _discover_profiles_callback(self, address, mac):
         def inner_function(profiles):
-            self._profiles_found.append((address, mac, profiles))
+            try:
+                host = socket.gethostbyaddr(address)[0]
+            except:
+                host = None
+            self._profiles_found.append((address, mac, profiles, host))
 
         return inner_function
 

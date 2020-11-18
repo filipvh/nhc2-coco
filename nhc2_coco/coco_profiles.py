@@ -28,9 +28,9 @@ class CoCoProfiles:
         self._client.on_connect = self._on_connect
         self._client.loop_start()
         self._client.connect_async(self._address, self._port)
-        while self._loop < 50 and self._loop >= 0:
-            sleep(0.5)
+        while self._loop < 150 and self._loop >= 0:
             self._client.loop(max_packets=10)
+            sleep(0.25)
         self._client.disconnect()
         self._client.loop_stop()
         if (self._loop > 0):
