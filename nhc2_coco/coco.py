@@ -1,15 +1,14 @@
 import json
 import logging
 import os
-from typing import List, Callable
 
 import paho.mqtt.client as mqtt
 
-from .helpers import extract_devices
-from .const import MQTT_PROTOCOL, MQTT_TRANSPORT, MQTT_TOPIC_PUBLIC_RSP, MQTT_TOPIC_SUFFIX_RSP, \
-    MQTT_TOPIC_SUFFIX_SYS_EVT, MQTT_TOPIC_SUFFIX_CMD, MQTT_TOPIC_SUFFIX_EVT, MQTT_TOPIC_PUBLIC_CMD, MQTT_RC_CODES
 from .coco_light import CoCoLight
 from .coco_switch import CoCoSwitch
+from .const import MQTT_PROTOCOL, MQTT_TRANSPORT, MQTT_TOPIC_PUBLIC_RSP, MQTT_TOPIC_SUFFIX_RSP, \
+    MQTT_TOPIC_SUFFIX_SYS_EVT, MQTT_TOPIC_SUFFIX_CMD, MQTT_TOPIC_SUFFIX_EVT, MQTT_TOPIC_PUBLIC_CMD, MQTT_RC_CODES
+from .helpers import extract_devices
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,22 +50,22 @@ class CoCo:
             if topic == (self._profile_creation_id + MQTT_TOPIC_SUFFIX_RSP):
                 if response['Method'] == 'devices.list':
                     client.unsubscribe(self._profile_creation_id + MQTT_TOPIC_SUFFIX_RSP)
-                    devices = extract_devices(response)
+                    actionable_devices = list(filter(lambda d: d['Type'] == 'action',extract_devices(response)))
                     existing_uuids = list(self._device_callbacks.keys())
 
                     valid_switches = ['socket', 'switched-generic']
                     valid_lights = ['light', 'dimmer']
-                    for x in devices:
+                    for x in actionable_devices:
                         if x['Uuid'] not in existing_uuids:
                             self._device_callbacks[x['Uuid']] = {'callbackHolder': None, 'entity': None}
 
-                    lights = [x for x in devices if
+                    lights = [x for x in actionable_devices if
                               (x['Model'] in valid_lights)
                               or (self._switches_as_lights
                                   and (x['Model'] in valid_switches))
                               ]
                     if not self._switches_as_lights:
-                        switches = [x for x in devices if x['Model'] in valid_switches]
+                        switches = [x for x in actionable_devices if x['Model'] in valid_switches]
                     else:
                         switches = []
 

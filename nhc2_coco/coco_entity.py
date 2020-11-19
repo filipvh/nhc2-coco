@@ -48,11 +48,9 @@ class CoCoEntity(ABC):
         self._type = None
         self._state = None
         self._callback_mutex = threading.RLock()
-        self._on_state_change = None
-        self._callback_mutex = threading.RLock()
-        self._on_change = None
-        self._callback_container = None
-        self._after_update_callback = None
+        self._on_change = (lambda: print('% has no _on_change callback set!'))
+        self._callback_container = (lambda: print('% has no _callback_container callback set!'))
+        self._after_update_callback = (lambda: print('% has no _after_update_callback callback set!'))
 
     def update_dev(self, dev, callback_container=None):
         has_changed = False
@@ -84,4 +82,3 @@ class CoCoEntity(ABC):
 
     def _state_changed(self):
         self.on_change()
-
