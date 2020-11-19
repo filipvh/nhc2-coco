@@ -43,7 +43,7 @@ class CoCo:
         def _on_message(client, userdata, message):
             topic = message.topic
             response = json.loads(message.payload)
-            if topic == MQTT_TOPIC_PUBLIC_RSP and response['Method'] == 'systeminfo.publish':
+            if topic == self._profile_creation_id + MQTT_TOPIC_PUBLIC_RSP and response['Method'] == 'systeminfo.publish':
                 self._system_info = response
                 self._system_info_callback(self._system_info)
                 return
@@ -115,10 +115,10 @@ class CoCo:
             if rc == 0:
                 _LOGGER.info('Connected!')
                 client.subscribe(self._profile_creation_id + MQTT_TOPIC_SUFFIX_RSP, qos=1)
-                client.subscribe(MQTT_TOPIC_PUBLIC_RSP, qos=1)
+                client.subscribe(self._profile_creation_id + MQTT_TOPIC_PUBLIC_RSP, qos=1)
                 client.subscribe(self._profile_creation_id + MQTT_TOPIC_SUFFIX_EVT, qos=1)
                 client.subscribe(self._profile_creation_id + MQTT_TOPIC_SUFFIX_SYS_EVT, qos=1)
-                client.publish(MQTT_TOPIC_PUBLIC_CMD, '{"Method":"systeminfo.publish"}', 1)
+                client.publish(self._profile_creation_id + MQTT_TOPIC_PUBLIC_CMD, '{"Method":"systeminfo.publish"}', 1)
                 client.publish(self._profile_creation_id + MQTT_TOPIC_SUFFIX_CMD, '{"Method":"devices.list"}', 1)
             elif MQTT_RC_CODES[rc]:
                 raise Exception(MQTT_RC_CODES[rc])
