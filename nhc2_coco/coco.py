@@ -105,7 +105,8 @@ class CoCo:
                     and (response['Method'] == 'devices.status' or response['Method'] == 'devices.changed'):
                 devices = extract_devices(response)
                 for device in devices:
-                    if 'Uuid' in device and device['Uuid'] and self._device_callbacks[device['Uuid']]:
+                    if 'Uuid' in device and device['Uuid'] in self._device_callbacks and 'callbackHolder' in \
+                            self._device_callbacks[device['Uuid']]:
                         self._device_callbacks[device['Uuid']]['callbackHolder'](device)
 
                 return
