@@ -4,6 +4,23 @@ MQTT_TLS_VERSION = 2
 MQTT_PROTOCOL = mqtt.MQTTv311
 MQTT_TRANSPORT = "tcp"
 
+KEY_UUID = 'Uuid'
+KEY_MODEL = 'Model'
+KEY_TYPE = 'Type'
+KEY_METHOD = 'Method'
+KEY_ENTITY = 'entity'
+
+DEV_TYPE_ACTION = 'action'
+
+INTERNAL_KEY_CALLBACK = 'callbackHolder'
+
+
+MQTT_METHOD_SYSINFO_PUBLISH = 'systeminfo.publish'
+MQTT_METHOD_SYSINFO_PUBLISHED = 'systeminfo.published'
+MQTT_METHOD_DEVICES_LIST = 'devices.list'
+MQTT_METHOD_DEVICES_STATUS = 'devices.status'
+MQTT_METHOD_DEVICES_CHANGED = 'devices.changed'
+
 MQTT_RC_CODES = ['',
                  'Connection refused - incorrect protocol version',
                  'Connection refused - invalid client identifier',

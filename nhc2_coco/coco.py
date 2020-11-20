@@ -7,7 +7,10 @@ import paho.mqtt.client as mqtt
 from .coco_light import CoCoLight
 from .coco_switch import CoCoSwitch
 from .const import MQTT_PROTOCOL, MQTT_TRANSPORT, MQTT_TOPIC_PUBLIC_RSP, MQTT_TOPIC_SUFFIX_RSP, \
-    MQTT_TOPIC_SUFFIX_SYS_EVT, MQTT_TOPIC_SUFFIX_CMD, MQTT_TOPIC_SUFFIX_EVT, MQTT_TOPIC_PUBLIC_CMD, MQTT_RC_CODES
+    MQTT_TOPIC_SUFFIX_SYS_EVT, MQTT_TOPIC_SUFFIX_CMD, MQTT_TOPIC_SUFFIX_EVT, MQTT_TOPIC_PUBLIC_CMD, MQTT_RC_CODES, \
+    KEY_UUID, KEY_ENTITY, KEY_MODEL, INTERNAL_KEY_CALLBACK, KEY_TYPE, DEV_TYPE_ACTION, MQTT_METHOD_SYSINFO_PUBLISH, \
+    KEY_METHOD, MQTT_METHOD_DEVICES_LIST, MQTT_METHOD_SYSINFO_PUBLISHED, MQTT_METHOD_DEVICES_STATUS, \
+    MQTT_METHOD_DEVICES_CHANGED
 from .helpers import extract_devices
 
 _LOGGER = logging.getLogger(__name__)
@@ -15,6 +18,8 @@ _LOGGER = logging.getLogger(__name__)
 
 class CoCo:
     def __init__(self, address, username, password, port=8883, ca_path=None, switches_as_lights=False):
+        self._valid_switches = ['socket', 'switched-generic']
+        self._valid_lights = ['light', 'dimmer']
         if ca_path is None:
             ca_path = os.path.dirname(os.path.realpath(__file__)) + '/coco_ca.pem'
         client = mqtt.Client(protocol=MQTT_PROTOCOL, transport=MQTT_TRANSPORT)
@@ -43,72 +48,78 @@ class CoCo:
         def _on_message(client, userdata, message):
             topic = message.topic
             response = json.loads(message.payload)
-            if topic == self._profile_creation_id + MQTT_TOPIC_PUBLIC_RSP and response['Method'] == 'systeminfo.publish':
+            if topic == self._profile_creation_id + MQTT_TOPIC_PUBLIC_RSP and response[
+                KEY_METHOD] == MQTT_METHOD_SYSINFO_PUBLISH:
                 self._system_info = response
                 self._system_info_callback(self._system_info)
                 return
             if topic == (self._profile_creation_id + MQTT_TOPIC_SUFFIX_RSP):
-                if response['Method'] == 'devices.list':
+                if response[KEY_METHOD] == MQTT_METHOD_DEVICES_LIST:
                     client.unsubscribe(self._profile_creation_id + MQTT_TOPIC_SUFFIX_RSP)
-                    actionable_devices = list(filter(lambda d: d['Type'] == 'action',extract_devices(response)))
+                    actionable_devices = list(
+                        filter(lambda d: d[KEY_TYPE] == DEV_TYPE_ACTION, extract_devices(response)))
                     existing_uuids = list(self._device_callbacks.keys())
 
-                    valid_switches = ['socket', 'switched-generic']
-                    valid_lights = ['light', 'dimmer']
                     for x in actionable_devices:
-                        if x['Uuid'] not in existing_uuids:
-                            self._device_callbacks[x['Uuid']] = {'callbackHolder': None, 'entity': None}
+                        if x[KEY_UUID] not in existing_uuids:
+                            self._device_callbacks[x[KEY_UUID]] = {INTERNAL_KEY_CALLBACK: None, KEY_ENTITY: None}
 
                     lights = [x for x in actionable_devices if
-                              (x['Model'] in valid_lights)
+                              (x[KEY_MODEL] in self._valid_lights)
                               or (self._switches_as_lights
-                                  and (x['Model'] in valid_switches))
+                                  and (x[KEY_MODEL] in self._valid_switches))
                               ]
                     if not self._switches_as_lights:
-                        switches = [x for x in actionable_devices if x['Model'] in valid_switches]
+                        switches = [x for x in actionable_devices if x[KEY_MODEL] in self._valid_switches]
                     else:
                         switches = []
 
                     self._lights = []
                     for light in lights:
-                        if self._device_callbacks[light['Uuid']] and self._device_callbacks[light['Uuid']]['entity'] and \
-                                self._device_callbacks[light['Uuid']]['entity'].uuid:
-                            self._device_callbacks[light['Uuid']]['entity'].update_dev(light)
+                        if self._device_callbacks[light[KEY_UUID]] and self._device_callbacks[light[KEY_UUID]][
+                            KEY_ENTITY] and \
+                                self._device_callbacks[light[KEY_UUID]][KEY_ENTITY].uuid:
+                            self._device_callbacks[light[KEY_UUID]][KEY_ENTITY].update_dev(light)
                         else:
-                            self._device_callbacks[light['Uuid']]['entity'] = CoCoLight(light, self._device_callbacks[
-                                light['Uuid']], self._client, self._profile_creation_id)
-                        self._lights.append(self._device_callbacks[light['Uuid']]['entity'])
+                            self._device_callbacks[light[KEY_UUID]][KEY_ENTITY] = CoCoLight(light,
+                                                                                            self._device_callbacks[
+                                                                                                light[KEY_UUID]],
+                                                                                            self._client,
+                                                                                            self._profile_creation_id)
+                        self._lights.append(self._device_callbacks[light[KEY_UUID]][KEY_ENTITY])
                     self._switches = []
                     for switch in switches:
-                        if self._device_callbacks[switch['Uuid']] and self._device_callbacks[switch['Uuid']][
-                            'entity'] and \
-                                self._device_callbacks[switch['Uuid']]['entity'].uuid:
-                            self._device_callbacks[switch['Uuid']]['entity'].update_dev(switch)
+                        if self._device_callbacks[switch[KEY_UUID]] and self._device_callbacks[switch[KEY_UUID]][
+                            KEY_ENTITY] and \
+                                self._device_callbacks[switch[KEY_UUID]][KEY_ENTITY].uuid:
+                            self._device_callbacks[switch[KEY_UUID]][KEY_ENTITY].update_dev(switch)
                         else:
-                            self._device_callbacks[switch['Uuid']]['entity'] = CoCoSwitch(switch,
-                                                                                          self._device_callbacks[
-                                                                                              switch['Uuid']],
-                                                                                          self._client,
-                                                                                          self._profile_creation_id)
-                        self._switches.append(self._device_callbacks[switch['Uuid']]['entity'])
+                            self._device_callbacks[switch[KEY_UUID]][KEY_ENTITY] = CoCoSwitch(switch,
+                                                                                              self._device_callbacks[
+                                                                                                  switch[KEY_UUID]],
+                                                                                              self._client,
+                                                                                              self._profile_creation_id)
+                        self._switches.append(self._device_callbacks[switch[KEY_UUID]][KEY_ENTITY])
 
                     self._lights_callback(self._lights)
                     self._switches_callback(self._switches)
                 return
             if topic == (self._profile_creation_id + MQTT_TOPIC_SUFFIX_SYS_EVT) \
-                    and response['Method'] == 'systeminfo.published':
+                    and response[KEY_METHOD] == MQTT_METHOD_SYSINFO_PUBLISHED:
                 # If the connected controller publishes sysinfo... we expect something to have changed.
                 client.subscribe(self._profile_creation_id + MQTT_TOPIC_SUFFIX_RSP, qos=1)
                 client.publish(self._profile_creation_id + MQTT_TOPIC_SUFFIX_CMD, '{"Method":"devices.list"}', 1)
                 return
             if topic == (self._profile_creation_id + MQTT_TOPIC_SUFFIX_EVT) \
-                    and (response['Method'] == 'devices.status' or response['Method'] == 'devices.changed'):
+                    and (response[KEY_METHOD] == MQTT_METHOD_DEVICES_STATUS or response[
+                KEY_METHOD] == MQTT_METHOD_DEVICES_CHANGED):
                 devices = extract_devices(response)
                 for device in devices:
-                    if 'Uuid' in device and device['Uuid'] in self._device_callbacks and 'callbackHolder' in \
-                            self._device_callbacks[device['Uuid']]:
-                        self._device_callbacks[device['Uuid']]['callbackHolder'](device)
-
+                    try:
+                        if KEY_UUID in device:
+                            self._device_callbacks[device[KEY_UUID]][INTERNAL_KEY_CALLBACK](device)
+                    except:
+                        pass
                 return
 
         def _on_connect(client, userdata, flags, rc):
@@ -128,8 +139,8 @@ class CoCo:
         def _on_disconnect(client, userdata, rc):
             _LOGGER.warning('Disconnected')
             for uuid, device_callback in self._device_callbacks.items():
-                offline = {'Online': 'False', 'Uuid': uuid}
-                device_callback['callbackHolder'](offline)
+                offline = {'Online': 'False', KEY_UUID: uuid}
+                device_callback[INTERNAL_KEY_CALLBACK](offline)
 
         self._client.on_message = _on_message
         self._client.on_connect = _on_connect
