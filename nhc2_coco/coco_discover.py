@@ -59,4 +59,3 @@ class CoCoDiscover:
                         self._on_discover(addr[0], mac, is_nhc2)
         server.close()
         self._on_done()
-        print(loops)
