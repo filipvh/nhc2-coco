@@ -1,8 +1,10 @@
 import asyncio
 import os
+import re
 
 import paho.mqtt.client as mqtt
 
+from nhc2_coco.coco_ip_by_mac import CoCoIpByMac
 from nhc2_coco.const import MQTT_PROTOCOL, MQTT_TRANSPORT
 
 loop = asyncio.get_event_loop()
@@ -13,6 +15,8 @@ class CoCoLoginValidation:
     """
 
     def __init__(self, address, username, password, port=8883, ca_path=None):
+
+        self._address_is_mac = re.match("[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", address.lower())
         self._address = address
         self._username = username
         self._password = password
@@ -47,7 +51,12 @@ class CoCoLoginValidation:
 
         client.on_connect = on_connect
         client.loop_start()
-        client.connect_async(self._address, self._port, keepalive=timeout)
+        if self._address_is_mac:
+            def connect_callback(ip):
+                client.connect_async(ip, self._port, keepalive=timeout)
+            CoCoIpByMac(self._address, connect_callback)
+        else:
+            client.connect_async(self._address, self._port, keepalive=timeout)
 
         try:
             await asyncio.wait_for(done_testing.wait(), timeout + 2)

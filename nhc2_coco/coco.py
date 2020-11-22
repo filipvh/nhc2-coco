@@ -1,9 +1,11 @@
 import json
 import logging
 import os
+import re
 
 import paho.mqtt.client as mqtt
 
+from .coco_ip_by_mac import CoCoIpByMac
 from .coco_light import CoCoLight
 from .coco_switch import CoCoSwitch
 from .const import MQTT_PROTOCOL, MQTT_TRANSPORT, MQTT_TOPIC_PUBLIC_RSP, MQTT_TOPIC_SUFFIX_RSP, \
@@ -18,6 +20,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class CoCo:
     def __init__(self, address, username, password, port=8883, ca_path=None, switches_as_lights=False):
+        self._address_is_mac = re.match("[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", address.lower())
         self._valid_switches = ['socket', 'switched-generic']
         self._valid_lights = ['light', 'dimmer']
         if ca_path is None:
@@ -124,6 +127,7 @@ class CoCo:
 
         def _on_connect(client, userdata, flags, rc):
             if rc == 0:
+                print("connetec %d" % rc)
                 _LOGGER.info('Connected!')
                 client.subscribe(self._profile_creation_id + MQTT_TOPIC_SUFFIX_RSP, qos=1)
                 client.subscribe(self._profile_creation_id + MQTT_TOPIC_PUBLIC_RSP, qos=1)
@@ -137,7 +141,14 @@ class CoCo:
                 raise Exception('Unknown error')
 
         def _on_disconnect(client, userdata, rc):
+            def update_ip(ip):
+                if self._client._host != ip:
+                    self._client.connect_async(ip, self._port, keepalive=5, clean_start=True)
+                    self._client.reconnect()
+
             _LOGGER.warning('Disconnected')
+            if self._address_is_mac:
+                CoCoIpByMac(self._address, update_ip)
             for uuid, device_callback in self._device_callbacks.items():
                 offline = {'Online': 'False', KEY_UUID: uuid}
                 device_callback[INTERNAL_KEY_CALLBACK](offline)
@@ -145,9 +156,14 @@ class CoCo:
         self._client.on_message = _on_message
         self._client.on_connect = _on_connect
         self._client.on_disconnect = _on_disconnect
-
-        self._client.connect_async(self._address, self._port)
-        self._client.loop_start()
+        if self._address_is_mac:
+            def connect_with_ip(ip):
+                self._client.connect_async(ip, self._port, keepalive=5, clean_start=True)
+                self._client.loop_start()
+            CoCoIpByMac(self._address, connect_with_ip)
+        else:
+            self._client.connect_async(self._address, self._port, clean_start=True)
+            self._client.loop_start()
 
     def disconnect(self):
         self._client.loop_stop()
