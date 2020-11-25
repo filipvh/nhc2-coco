@@ -1,12 +1,19 @@
 import paho.mqtt.client as mqtt
 
+from enum import Enum
+
+
 MQTT_TLS_VERSION = 2
 MQTT_PROTOCOL = mqtt.MQTTv311
 MQTT_TRANSPORT = "tcp"
 MQTT_CERT_FILE = '/coco_ca.pem'
 
+
+
+
 LIST_VALID_LIGHTS = ['light', 'dimmer']
 LIST_VALID_SWITCHES = ['socket', 'switched-generic']
+LIST_VALID_SHUTTERS = ['rolldownshutter', 'sunblind', 'gate', 'venetianblind']
 
 DEVICE_CONTROL_BUFFER_SIZE = 16
 DEVICE_CONTROL_BUFFER_COMMAND_SIZE = 32
@@ -21,16 +28,22 @@ KEY_NAME = 'Name'
 KEY_ONLINE = 'Online'
 KEY_PARAMS = 'Params'
 KEY_PROPERTIES = 'Properties'
+KEY_POSITION = 'Position'
 KEY_STATUS = 'Status'
 KEY_TYPE = 'Type'
 KEY_UUID = 'Uuid'
 
 VALUE_ON = 'On'
 VALUE_OFF = 'Off'
+VALUE_OPEN = 'Open'
+VALUE_STOP = 'Stop'
+VALUE_CLOSE = 'Close'
 
 DEV_TYPE_ACTION = 'action'
 
 INTERNAL_KEY_CALLBACK = 'callbackHolder'
+INTERNAL_KEY_MODELS = 'models'
+INTERNAL_KEY_CLASS = 'class'
 
 CALLBACK_HOLDER_PROP = 'callbackHolder'
 

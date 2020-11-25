@@ -3,26 +3,39 @@ import logging
 import os
 import threading
 from time import sleep
+from typing import Callable
 
 import paho.mqtt.client as mqtt
 
+from .coco_device_class import CoCoDeviceClass
 from .coco_light import CoCoLight
+from .coco_shutter import CoCoShutter
 from .coco_switch import CoCoSwitch
 from .const import MQTT_PROTOCOL, MQTT_TRANSPORT, MQTT_TOPIC_PUBLIC_RSP, MQTT_TOPIC_SUFFIX_RSP, \
     MQTT_TOPIC_SUFFIX_SYS_EVT, MQTT_TOPIC_SUFFIX_CMD, MQTT_TOPIC_SUFFIX_EVT, MQTT_TOPIC_PUBLIC_CMD, MQTT_RC_CODES, \
     KEY_UUID, KEY_ENTITY, KEY_MODEL, INTERNAL_KEY_CALLBACK, KEY_TYPE, DEV_TYPE_ACTION, MQTT_METHOD_SYSINFO_PUBLISH, \
     KEY_METHOD, MQTT_METHOD_DEVICES_LIST, MQTT_METHOD_SYSINFO_PUBLISHED, MQTT_METHOD_DEVICES_STATUS, \
     MQTT_METHOD_DEVICES_CHANGED, LIST_VALID_SWITCHES, LIST_VALID_LIGHTS, MQTT_CERT_FILE, \
-    DEVICE_CONTROL_BUFFER_COMMAND_SIZE, DEVICE_CONTROL_BUFFER_SIZE
+    DEVICE_CONTROL_BUFFER_COMMAND_SIZE, DEVICE_CONTROL_BUFFER_SIZE, \
+    INTERNAL_KEY_MODELS, INTERNAL_KEY_CLASS, LIST_VALID_SHUTTERS
 from .helpers import extract_devices, process_device_commands
 
 _LOGGER = logging.getLogger(__name__)
 sem = threading.Semaphore()
+DEVICE_SETS = {
+    CoCoDeviceClass.SHUTTERS: {INTERNAL_KEY_CLASS: CoCoShutter, INTERNAL_KEY_MODELS: LIST_VALID_SHUTTERS},
+    CoCoDeviceClass.SWITCHES: {INTERNAL_KEY_CLASS: CoCoSwitch, INTERNAL_KEY_MODELS: LIST_VALID_SWITCHES},
+    CoCoDeviceClass.LIGHTS: {INTERNAL_KEY_CLASS: CoCoLight, INTERNAL_KEY_MODELS: LIST_VALID_LIGHTS}
+}
 
 
 class CoCo:
     def __init__(self, address, username, password, port=8883, ca_path=None, switches_as_lights=False):
 
+        if switches_as_lights:
+            DEVICE_SETS[CoCoDeviceClass.LIGHTS] = {INTERNAL_KEY_CLASS: CoCoLight,
+                                                   INTERNAL_KEY_MODELS: LIST_VALID_LIGHTS + LIST_VALID_SWITCHES}
+            DEVICE_SETS[CoCoDeviceClass.SWITCHES] = {INTERNAL_KEY_CLASS: CoCoSwitch, INTERNAL_KEY_MODELS: []}
         # The device control buffer fields
         self._keep_thread_running = True
         self._device_control_buffer = {}
@@ -32,8 +45,6 @@ class CoCo:
         self._device_control_buffer_thread = threading.Thread(target=self._publish_device_control_commands)
         self._device_control_buffer_thread.start()
 
-        self._valid_switches = LIST_VALID_SWITCHES
-        self._valid_lights = LIST_VALID_LIGHTS
         if ca_path is None:
             ca_path = os.path.dirname(os.path.realpath(__file__)) + MQTT_CERT_FILE
         client = mqtt.Client(protocol=MQTT_PROTOCOL, transport=MQTT_TRANSPORT)
@@ -46,11 +57,8 @@ class CoCo:
         self._profile_creation_id = username
         self._all_devices = None
         self._device_callbacks = {}
-        self._switches_as_lights = switches_as_lights
-        self._lights = None
-        self._lights_callback = lambda x: None
-        self._switches = None
-        self._switches_callback = lambda x: None
+        self._devices = {}
+        self._devices_callback = {}
         self._system_info = None
         self._system_info_callback = lambda x: None
 
@@ -130,18 +138,10 @@ class CoCo:
         if self._system_info:
             self._system_info_callback(self._system_info)
 
-    def get_lights(self, callback):
-        self._lights_callback = callback
-        if self._lights:
-            self._lights_callback(self._lights)
-
-    def get_switches(self, callback):
-        self._switches_callback = callback
-        if self._switches:
-            self._switches_callback(self._switches)
-
-    def _emit_switches(self):
-        self._switches_callback(self._switches)
+    def get_devices(self, device_class: CoCoDeviceClass, callback: Callable):
+        self._devices_callback[device_class] = callback
+        if self._devices:
+            self._devices_callback[device_class](self._devices[device_class])
 
     def _publish_device_control_commands(self):
         while self._keep_thread_running:
@@ -170,52 +170,40 @@ class CoCo:
 
     # Processes response on devices.list
     def _process_devices_list(self, response):
+
+        # Only add devices that are actionable
         actionable_devices = list(
             filter(lambda d: d[KEY_TYPE] == DEV_TYPE_ACTION, extract_devices(response)))
+
         existing_uuids = list(self._device_callbacks.keys())
 
-        for x in actionable_devices:
-            if x[KEY_UUID] not in existing_uuids:
-                self._device_callbacks[x[KEY_UUID]] = {INTERNAL_KEY_CALLBACK: None, KEY_ENTITY: None}
+        for actionable_device in actionable_devices:
+            if actionable_device[KEY_UUID] not in existing_uuids:
+                self._device_callbacks[actionable_device[KEY_UUID]] = \
+                    {INTERNAL_KEY_CALLBACK: None, KEY_ENTITY: None}
 
-        lights = [x for x in actionable_devices if
-                  (x[KEY_MODEL] in self._valid_lights)
-                  or (self._switches_as_lights
-                      and (x[KEY_MODEL] in self._valid_switches))
-                  ]
-        if not self._switches_as_lights:
-            switches = [x for x in actionable_devices if x[KEY_MODEL] in self._valid_switches]
-        else:
-            switches = []
+        self.initialize_devices(CoCoDeviceClass.SWITCHES, actionable_devices)
+        self.initialize_devices(CoCoDeviceClass.LIGHTS, actionable_devices)
 
-        self._lights = []
-        for light in lights:
-            if self._device_callbacks[light[KEY_UUID]] and self._device_callbacks[light[KEY_UUID]][
+    def initialize_devices(self, device_class, actionable_devices):
+
+        base_devices = [x for x in actionable_devices if x[KEY_MODEL] in DEVICE_SETS[device_class][INTERNAL_KEY_MODELS]]
+
+        self._devices[device_class] = []
+        for base_device in base_devices:
+            if self._device_callbacks[base_device[KEY_UUID]] and self._device_callbacks[base_device[KEY_UUID]][
                 KEY_ENTITY] and \
-                    self._device_callbacks[light[KEY_UUID]][KEY_ENTITY].uuid:
-                self._device_callbacks[light[KEY_UUID]][KEY_ENTITY].update_dev(light)
+                    self._device_callbacks[base_device[KEY_UUID]][KEY_ENTITY].uuid:
+                self._device_callbacks[base_device[KEY_UUID]][KEY_ENTITY].update_dev(base_device)
             else:
-                self._device_callbacks[light[KEY_UUID]][KEY_ENTITY] = CoCoLight(light,
-                                                                                self._device_callbacks[
-                                                                                    light[KEY_UUID]],
-                                                                                self._client,
-                                                                                self._profile_creation_id,
-                                                                                self._add_device_control)
-            self._lights.append(self._device_callbacks[light[KEY_UUID]][KEY_ENTITY])
-        self._switches = []
-        for switch in switches:
-            if self._device_callbacks[switch[KEY_UUID]] and self._device_callbacks[switch[KEY_UUID]][
-                KEY_ENTITY] and \
-                    self._device_callbacks[switch[KEY_UUID]][KEY_ENTITY].uuid:
-                self._device_callbacks[switch[KEY_UUID]][KEY_ENTITY].update_dev(switch)
-            else:
-                self._device_callbacks[switch[KEY_UUID]][KEY_ENTITY] = CoCoSwitch(switch,
-                                                                                  self._device_callbacks[
-                                                                                      switch[KEY_UUID]],
-                                                                                  self._client,
-                                                                                  self._profile_creation_id,
-                                                                                  self._add_device_control)
-            self._switches.append(self._device_callbacks[switch[KEY_UUID]][KEY_ENTITY])
-
-        self._lights_callback(self._lights)
-        self._switches_callback(self._switches)
+                self._device_callbacks[base_device[KEY_UUID]][KEY_ENTITY] = \
+                    DEVICE_SETS[device_class][INTERNAL_KEY_CLASS](base_device,
+                                                                  self._device_callbacks[
+                                                                      base_device[
+                                                                          KEY_UUID]],
+                                                                  self._client,
+                                                                  self._profile_creation_id,
+                                                                  self._add_device_control)
+            self._devices[device_class].append(self._device_callbacks[base_device[KEY_UUID]][KEY_ENTITY])
+        if device_class in self._devices_callback:
+            self._devices_callback[device_class](self._devices[device_class])
