@@ -1,7 +1,8 @@
 import threading
-
 from abc import ABC, abstractmethod
 
+from nhc2_coco.const import KEY_NAME, CALLBACK_HOLDER_PROP, KEY_TYPE, KEY_MODEL, KEY_ONLINE, KEY_DISPLAY_NAME
+from nhc2_coco.helpers import dev_prop_changed
 
 class CoCoEntity(ABC):
 
@@ -38,7 +39,7 @@ class CoCoEntity(ABC):
         with self._callback_mutex:
             self._on_change = func
 
-    def __init__(self, dev, callback_container, client, profile_creation_id):
+    def __init__(self, dev, callback_container, client, profile_creation_id, command_device_control):
         self._client = client
         self._profile_creation_id = profile_creation_id
         self._uuid = dev['Uuid']
@@ -47,6 +48,7 @@ class CoCoEntity(ABC):
         self._model = None
         self._type = None
         self._state = None
+        self._command_device_control = command_device_control
         self._callback_mutex = threading.RLock()
         self._on_change = (lambda: print('%s (%s) has no _on_change callback set!' % (self._name, self._uuid)))
         self._callback_container = (
@@ -56,25 +58,25 @@ class CoCoEntity(ABC):
 
     def update_dev(self, dev, callback_container=None):
         has_changed = False
-        if 'Name' in dev and self._name != dev['Name']:
-            self._name = dev['Name']
+        if dev_prop_changed(self._name, dev, KEY_NAME):
+            self._name = dev[KEY_NAME]
             has_changed = True
-        if 'DisplayName' in dev and self._name != dev['DisplayName']:
-            self._name = dev['DisplayName']
+        if dev_prop_changed(self._name, dev, KEY_DISPLAY_NAME):
+            self._name = dev[KEY_DISPLAY_NAME]
             has_changed = True
-        if 'Online' in dev and self._online != (dev['Online'] == 'True'):
-            self._online = dev['Online'] == 'True'
+        if KEY_ONLINE in dev and self._online != (dev[KEY_ONLINE] == 'True'):
+            self._online = dev[KEY_ONLINE] == 'True'
             has_changed = True
-        if 'Model' in dev and self._model != dev['Model']:
-            self._model = dev['Model']
+        if dev_prop_changed(self._model, dev, KEY_MODEL):
+            self._model = dev[KEY_MODEL]
             has_changed = True
-        if 'Type' in dev and self._type != dev['Type']:
-            self._type = dev['Type']
+        if dev_prop_changed(self._type, dev, KEY_TYPE):
+            self._type = dev[KEY_TYPE]
             has_changed = True
         if callback_container:
             self._callback_container = callback_container
-            if 'callbackHolder' in self._callback_container:
-                self._callback_container['callbackHolder'] = self._update
+            if CALLBACK_HOLDER_PROP in self._callback_container:
+                self._callback_container[CALLBACK_HOLDER_PROP] = self._update
                 has_changed = True
         return has_changed
 
