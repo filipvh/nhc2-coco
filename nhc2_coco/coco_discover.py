@@ -47,6 +47,7 @@ class CoCoDiscover:
         loops = 0
 
         while loops < 200 and ((not self._discovered_at_least_one) or loops < 20):
+            print(loops)
             loops = loops + 1
             ready = select.select([server], [], [], 0.01)
             if ready[0]:

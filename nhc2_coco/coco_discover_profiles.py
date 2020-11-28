@@ -39,6 +39,8 @@ class CoCoDiscoverProfiles:
         return inner_function
 
     def _done_discovering_controllers_callback(self):
+        if len(self._controllers_found) == 0:
+            loop.call_soon_threadsafe(callback=self._done)
         for ctrl in self._controllers_found:
             CoCoProfiles(self._discover_profiles_callback(ctrl[0], ctrl[1]), ctrl[0],
                          self._done_discovering_profiles_callback)
