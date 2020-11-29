@@ -23,21 +23,19 @@ class CoCoProfiles:
         self._callback = callback
         self._done_discovering_profiles_callback = done_discovering_profiles_callback
         self._loop = 0
+        self._max_loop = 200
         self._port = port
         self._client.on_message = self._on_message
         self._client.on_connect = self._on_connect
-        self._client.loop_start()
         self._client.connect_async(self._address, self._port)
-        while self._loop < 150 and self._loop >= 0:
+        self._client.loop_start()
+        while self._max_loop > self._loop >= 0:
             self._loop = self._loop + 1
-            self._client.loop(max_packets=10)
-            sleep(0.25)
-        self._client.disconnect()
-        self._client.loop_stop()
-        if (self._loop > 0):
-            self._callback([])
-            self._loop = -1
+            sleep(0.05)
+        if self._loop > 0:
+            self._callback(None)
         self._done_discovering_profiles_callback()
+        self._client.disconnect()
 
     def _on_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -45,7 +43,7 @@ class CoCoProfiles:
             client.publish(MQTT_TOPIC_PUBLIC_AUTH_CMD, '{"Method":"profiles.list"}', 1)
         else:
             self._callback([])
-            self._loop = -1
+            self._loop = -100
 
     def _on_message(self, client, userdata, message):
 
