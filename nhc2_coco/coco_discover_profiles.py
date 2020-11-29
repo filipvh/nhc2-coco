@@ -6,17 +6,22 @@ from nhc2_coco.coco_profiles import CoCoProfiles
 
 loop = asyncio.get_event_loop()
 
+
 class CoCoDiscoverProfiles:
     """CoCoDiscover will help you discover NHC2 Profiles on all devices on the network. It will NOT find hobby
     profiles. The username then is provided by Niko (eg. hobby) This relies on not publicly documented API calls! It
     also broadcasts a UDP packet on all available (ipV4) broadcast addresses.
     """
 
-    def __init__(self):
+    def __init__(self, host=None):
         self._controllers_found = []
         self._profiles_found = []
         self._done_scanning_profiles = asyncio.Event()
-        CoCoDiscover(self._discover_controllers_callback, self._done_discovering_controllers_callback)
+        if host is None:
+            CoCoDiscover(self._discover_controllers_callback, self._done_discovering_controllers_callback)
+        else:
+            """If a host is provided, we only search for profiles."""
+            self._search_for_one_host(host)
 
     def _done(self):
         self._done_scanning_profiles.set()
@@ -28,11 +33,14 @@ class CoCoDiscoverProfiles:
         await self._wait_until_done()
         return self._profiles_found
 
-    def _discover_profiles_callback(self, address, mac):
+    def _discover_profiles_callback(self, address, mac, skip_host_search=False):
         def inner_function(profiles):
-            try:
-                host = socket.gethostbyaddr(address)[0]
-            except:
+            if skip_host_search is not True:
+                try:
+                    host = socket.gethostbyaddr(address)[0]
+                except:
+                    host = None
+            else:
                 host = None
             self._profiles_found.append((address, mac, profiles, host))
 
@@ -52,3 +60,9 @@ class CoCoDiscoverProfiles:
     def _discover_controllers_callback(self, address, mac, is_nhc2):
         if (is_nhc2):
             self._controllers_found.append((address, mac))
+
+    def _search_for_one_host(self, host):
+        self._controllers_found = [(host, None)]
+        for ctrl in self._controllers_found:
+            CoCoProfiles(self._discover_profiles_callback(ctrl[0], ctrl[1], True), ctrl[0],
+                         self._done_discovering_profiles_callback)
