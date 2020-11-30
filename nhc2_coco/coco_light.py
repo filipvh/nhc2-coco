@@ -33,8 +33,8 @@ class CoCoLight(CoCoEntity):
         self._command_device_control(self._uuid, KEY_STATUS, VALUE_OFF)
 
     def set_brightness(self, brightness):
-        if brightness == int(brightness) and 100 >= brightness >= 0:
-            self._command_device_control(self._uuid, KEY_BRIGHTNESS, brightness)
+        if brightness == brightness and 100 >= brightness >= 0:
+            self._command_device_control(self._uuid, KEY_BRIGHTNESS, str(brightness))
         else:
             _LOGGER.error('Invalid brightness value passed. Must be integer [0-100]')
 
@@ -45,7 +45,7 @@ class CoCoLight(CoCoEntity):
             self._state = (status_value == VALUE_ON)
             has_changed = True
         if self.support_brightness:
-            brightness_value = extract_property_value_from_device(dev, KEY_BRIGHTNESS)
+            brightness_value = int(extract_property_value_from_device(dev, KEY_BRIGHTNESS))
             if brightness_value and self._brightness != brightness_value:
                 self._brightness = brightness_value
                 has_changed = True
