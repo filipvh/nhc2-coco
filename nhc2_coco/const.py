@@ -9,9 +9,9 @@ MQTT_TRANSPORT = "tcp"
 MQTT_CERT_FILE = '/coco_ca.pem'
 
 
+VALUE_DIMMER = 'dimmer'
 
-
-LIST_VALID_LIGHTS = ['light', 'dimmer']
+LIST_VALID_LIGHTS = ['light', VALUE_DIMMER]
 LIST_VALID_SWITCHES = ['socket', 'switched-generic']
 LIST_VALID_SHUTTERS = ['rolldownshutter', 'sunblind', 'gate', 'venetianblind']
 

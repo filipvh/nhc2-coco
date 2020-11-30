@@ -1,7 +1,7 @@
 import logging
 
 from .coco_entity import CoCoEntity
-from .const import KEY_STATUS, VALUE_ON, VALUE_OFF, KEY_BRIGHTNESS
+from .const import KEY_STATUS, VALUE_ON, VALUE_OFF, KEY_BRIGHTNESS, VALUE_DIMMER
 from .helpers import extract_property_value_from_device
 
 _LOGGER = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ class CoCoLight(CoCoEntity):
 
     @property
     def support_brightness(self):
-        return self._type == 'dimmer'
+        return self._model == VALUE_DIMMER
 
     def __init__(self, dev, callback_container, client, profile_creation_id, command_device_control):
         super().__init__(dev, callback_container, client, profile_creation_id, command_device_control)
