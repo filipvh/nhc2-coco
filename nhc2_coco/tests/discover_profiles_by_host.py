@@ -2,7 +2,9 @@ import asyncio
 
 from nhc2_coco.coco_discover_profiles import CoCoDiscoverProfiles
 
-disc = CoCoDiscoverProfiles('192.168.99.9')
+# Enter the IP/Host you want to test here
+host = 'nhc2.local'
+disc = CoCoDiscoverProfiles(host)
 
 loop = asyncio.get_event_loop()
 
