@@ -184,6 +184,7 @@ class CoCo:
 
         self.initialize_devices(CoCoDeviceClass.SWITCHES, actionable_devices)
         self.initialize_devices(CoCoDeviceClass.LIGHTS, actionable_devices)
+        self.initialize_devices(CoCoDeviceClass.SHUTTERS, actionable_devices)
 
     def initialize_devices(self, device_class, actionable_devices):
 

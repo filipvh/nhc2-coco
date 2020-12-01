@@ -6,7 +6,7 @@ from .helpers import extract_property_value_from_device
 class CoCoShutter(CoCoEntity):
 
     @property
-    def position(self):
+    def position(self) -> int:
         return self._position
 
     def __init__(self, dev, callback_container, client, profile_creation_id, command_device_control):
@@ -28,9 +28,9 @@ class CoCoShutter(CoCoEntity):
 
     def update_dev(self, dev, callback_container=None):
         has_changed = super().update_dev(dev, callback_container)
-        position_value = extract_property_value_from_device(dev, KEY_POSITION)
-        if position_value and self._position != int(position_value):
-            self._position = int(position_value)
+        position_value = int(extract_property_value_from_device(dev, KEY_POSITION))
+        if position_value and self._position != position_value:
+            self._position = position_value
             has_changed = True
         return has_changed
 
