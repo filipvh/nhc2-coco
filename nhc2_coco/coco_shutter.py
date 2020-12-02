@@ -11,8 +11,8 @@ class CoCoShutter(CoCoEntity):
 
     def __init__(self, dev, callback_container, client, profile_creation_id, command_device_control):
         super().__init__(dev, callback_container, client, profile_creation_id, command_device_control)
-        self.update_dev(dev, callback_container)
         self._position = None
+        self.update_dev(dev, callback_container)
 
     def open(self):
         self._command_device_control(self._uuid, KEY_POSITION, VALUE_OPEN)
