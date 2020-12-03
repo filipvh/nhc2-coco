@@ -45,9 +45,9 @@ class CoCoLight(CoCoEntity):
             self._state = (status_value == VALUE_ON)
             has_changed = True
         if self.support_brightness:
-            brightness_value = int(extract_property_value_from_device(dev, KEY_BRIGHTNESS))
-            if brightness_value and self._brightness != brightness_value:
-                self._brightness = brightness_value
+            brightness_value = extract_property_value_from_device(dev, KEY_BRIGHTNESS)
+            if brightness_value is not None and self._brightness != int(brightness_value):
+                self._brightness = int(brightness_value)
                 has_changed = True
         return has_changed
 
