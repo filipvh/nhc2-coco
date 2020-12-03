@@ -18,6 +18,7 @@ LIST_VALID_SHUTTERS = ['rolldownshutter', 'sunblind', 'gate', 'venetianblind']
 DEVICE_CONTROL_BUFFER_SIZE = 16
 DEVICE_CONTROL_BUFFER_COMMAND_SIZE = 32
 
+KEY_ACTION = 'Action'
 KEY_BRIGHTNESS = 'Brightness'
 KEY_DEVICES = 'Devices'
 KEY_DISPLAY_NAME = 'DisplayName'
