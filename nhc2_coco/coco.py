@@ -79,11 +79,6 @@ class CoCo:
 
             elif topic == (self._profile_creation_id + MQTT_TOPIC_SUFFIX_RSP) and \
                     response[KEY_METHOD] == MQTT_METHOD_DEVICES_LIST:
-                #
-                with open(os.path.dirname(os.path.realpath(__file__)) + '/shutter.json') as json_file:
-                    data = json.load(json_file)
-                response['Params'][0]['Devices'].append(data)
-                #
                 self._client.unsubscribe(self._profile_creation_id + MQTT_TOPIC_SUFFIX_RSP)
                 self._process_devices_list(response)
 

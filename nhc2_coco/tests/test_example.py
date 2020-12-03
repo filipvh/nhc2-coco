@@ -12,7 +12,10 @@ coco.connect()
 
 
 def shutters(all):
+    print()
     print("Found %d shutter(s) on the CoCo" % len(all))
+    for shutter in all:
+        print("[ %s ] is at %s%%" % (shutter.name, shutter.position))
 
 
 def switches(all):
