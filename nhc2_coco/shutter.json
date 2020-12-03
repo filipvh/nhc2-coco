@@ -1,0 +1,64 @@
+{"Properties": [
+            {
+              "Moving": "False"
+            },
+            {
+              "Position": "49"
+            },
+            {
+              "Action": ""
+            },
+            {
+              "Aligned": "True"
+            }
+          ],
+          "Name": "Bureau Rol Straat",
+          "Technology": "nikohomecontrol",
+          "Uuid": "4b8e6536-b15d-425f-8646-18389ec99265",
+          "Identifier": "07ef8d42-d056-4890-a81c-d8e0c93d7c80",
+          "PropertyDefinitions": [
+            {
+              "Moving": {
+                "Description": "Boolean",
+                "HasStatus": "true",
+                "CanControl": "false"
+              }
+            },
+            {
+              "Position": {
+                "Description": "Range(0.00,100.00,1.00)",
+                "HasStatus": "true",
+                "CanControl": "true"
+              }
+            },
+            {
+              "Action": {
+                "Description": "Choice(Open,Close,Stop)",
+                "HasStatus": "false",
+                "CanControl": "true"
+              }
+            },
+            {
+              "Aligned": {
+                "Description": "Boolean",
+                "HasStatus": "true",
+                "CanControl": "false"
+              }
+            }
+          ],
+          "Online": "True",
+          "Model": "rolldownshutter",
+          "Traits": [],
+          "Type": "action",
+          "Parameters": [
+            {
+              "LocationId": "aa8e49e5-aaab-4378-9a0d-11a857b8a775"
+            },
+            {
+              "LocationName": "Bureau"
+            },
+            {
+              "LocationIcon": "tv"
+            }
+          ]
+}

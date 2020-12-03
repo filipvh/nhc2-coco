@@ -1,5 +1,5 @@
 from .coco_entity import CoCoEntity
-from .const import KEY_STATUS, VALUE_ON, VALUE_OFF, KEY_POSITION, VALUE_OPEN, VALUE_STOP, VALUE_CLOSE
+from .const import KEY_STATUS, VALUE_ON, VALUE_OFF, KEY_POSITION, VALUE_OPEN, VALUE_STOP, VALUE_CLOSE, KEY_ACTION
 from .helpers import extract_property_value_from_device
 
 
@@ -15,13 +15,13 @@ class CoCoShutter(CoCoEntity):
         self.update_dev(dev, callback_container)
 
     def open(self):
-        self._command_device_control(self._uuid, KEY_POSITION, VALUE_OPEN)
+        self._command_device_control(self._uuid, KEY_ACTION, VALUE_OPEN)
 
     def stop(self):
-        self._command_device_control(self._uuid, KEY_POSITION, VALUE_STOP)
+        self._command_device_control(self._uuid, KEY_ACTION, VALUE_STOP)
 
     def close(self):
-        self._command_device_control(self._uuid, KEY_POSITION, VALUE_CLOSE)
+        self._command_device_control(self._uuid, KEY_ACTION, VALUE_CLOSE)
 
     def set_position(self, position: int):
         self._command_device_control(self._uuid, KEY_POSITION, str(position))

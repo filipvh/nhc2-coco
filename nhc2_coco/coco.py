@@ -79,6 +79,11 @@ class CoCo:
 
             elif topic == (self._profile_creation_id + MQTT_TOPIC_SUFFIX_RSP) and \
                     response[KEY_METHOD] == MQTT_METHOD_DEVICES_LIST:
+                #
+                with open(os.path.dirname(os.path.realpath(__file__)) + '/shutter.json') as json_file:
+                    data = json.load(json_file)
+                response['Params'][0]['Devices'].append(data)
+                #
                 self._client.unsubscribe(self._profile_creation_id + MQTT_TOPIC_SUFFIX_RSP)
                 self._process_devices_list(response)
 
@@ -140,7 +145,7 @@ class CoCo:
 
     def get_devices(self, device_class: CoCoDeviceClass, callback: Callable):
         self._devices_callback[device_class] = callback
-        if self._devices:
+        if self._devices and device_class in self._devices:
             self._devices_callback[device_class](self._devices[device_class])
 
     def _publish_device_control_commands(self):
@@ -175,22 +180,25 @@ class CoCo:
         actionable_devices = list(
             filter(lambda d: d[KEY_TYPE] == DEV_TYPE_ACTION, extract_devices(response)))
 
+        # Only prepare for devices that don't already exist
+        # TODO - Can't we do this when we need it (in initialize_devices ?)
         existing_uuids = list(self._device_callbacks.keys())
-
         for actionable_device in actionable_devices:
             if actionable_device[KEY_UUID] not in existing_uuids:
                 self._device_callbacks[actionable_device[KEY_UUID]] = \
                     {INTERNAL_KEY_CALLBACK: None, KEY_ENTITY: None}
 
+        # Initialize
         self.initialize_devices(CoCoDeviceClass.SWITCHES, actionable_devices)
         self.initialize_devices(CoCoDeviceClass.LIGHTS, actionable_devices)
         self.initialize_devices(CoCoDeviceClass.SHUTTERS, actionable_devices)
 
     def initialize_devices(self, device_class, actionable_devices):
 
-        base_devices = [x for x in actionable_devices if x[KEY_MODEL] in DEVICE_SETS[device_class][INTERNAL_KEY_MODELS]]
-
-        self._devices[device_class] = []
+        base_devices = [x for x in actionable_devices if x[KEY_MODEL]
+                        in DEVICE_SETS[device_class][INTERNAL_KEY_MODELS]]
+        if device_class not in self._devices:
+            self._devices[device_class] = []
         for base_device in base_devices:
             if self._device_callbacks[base_device[KEY_UUID]] and self._device_callbacks[base_device[KEY_UUID]][
                 KEY_ENTITY] and \
@@ -205,6 +213,6 @@ class CoCo:
                                                                   self._client,
                                                                   self._profile_creation_id,
                                                                   self._add_device_control)
-            self._devices[device_class].append(self._device_callbacks[base_device[KEY_UUID]][KEY_ENTITY])
+                self._devices[device_class].append(self._device_callbacks[base_device[KEY_UUID]][KEY_ENTITY])
         if device_class in self._devices_callback:
             self._devices_callback[device_class](self._devices[device_class])

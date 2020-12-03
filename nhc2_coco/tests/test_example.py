@@ -55,7 +55,6 @@ def lights(all):
     print("Found %d light(s) on the CoCo of which %d are/is dimmable." % (len(all), len(dimmable)))
     print("Are  ON: ", are_on)
     print("Are OFF: ", are_off)
-    print("Commanding all lights on!")
 
 
 coco.get_devices(CoCoDeviceClass.SHUTTERS, shutters)
