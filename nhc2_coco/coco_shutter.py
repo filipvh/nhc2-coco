@@ -1,12 +1,12 @@
 from .coco_entity import CoCoEntity
-from .const import KEY_STATUS, VALUE_ON, VALUE_OFF, KEY_POSITION, VALUE_OPEN, VALUE_STOP, VALUE_CLOSE, KEY_ACTION
+from .const import KEY_POSITION, VALUE_OPEN, VALUE_STOP, VALUE_CLOSE, KEY_ACTION
 from .helpers import extract_property_value_from_device
 
 
 class CoCoShutter(CoCoEntity):
 
     @property
-    def position(self) -> int:
+    def position(self):
         return self._position
 
     def __init__(self, dev, callback_container, client, profile_creation_id, command_device_control):
