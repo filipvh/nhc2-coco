@@ -16,7 +16,7 @@ class CoCoFan(CoCoEntity):
         self.update_dev(dev, callback_container)
 
     def change_speed(self, speed: CoCoFanSpeed):
-        self._command_device_control(self._uuid, KEY_FAN_SPEED, speed.value[0])
+        self._command_device_control(self._uuid, KEY_FAN_SPEED, speed.value)
 
     def update_dev(self, dev, callback_container=None):
         has_changed = super().update_dev(dev, callback_container)
