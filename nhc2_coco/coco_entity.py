@@ -47,7 +47,6 @@ class CoCoEntity(ABC):
         self._online = None
         self._model = None
         self._type = None
-        self._state = None
         self._command_device_control = command_device_control
         self._callback_mutex = threading.RLock()
         self._on_change = (lambda: print('%s (%s) has no _on_change callback set!' % (self._name, self._uuid)))
