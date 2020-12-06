@@ -14,6 +14,7 @@ VALUE_DIMMER = 'dimmer'
 LIST_VALID_LIGHTS = ['light', VALUE_DIMMER]
 LIST_VALID_SWITCHES = ['socket', 'switched-generic']
 LIST_VALID_SHUTTERS = ['rolldownshutter', 'sunblind', 'gate', 'venetianblind']
+LIST_VALID_FANS = ['fan']
 
 DEVICE_CONTROL_BUFFER_SIZE = 16
 DEVICE_CONTROL_BUFFER_COMMAND_SIZE = 32
@@ -23,6 +24,7 @@ KEY_BRIGHTNESS = 'Brightness'
 KEY_DEVICES = 'Devices'
 KEY_DISPLAY_NAME = 'DisplayName'
 KEY_ENTITY = 'entity'
+KEY_FAN_SPEED = 'FanSpeed'
 KEY_METHOD = 'Method'
 KEY_MODEL = 'Model'
 KEY_NAME = 'Name'

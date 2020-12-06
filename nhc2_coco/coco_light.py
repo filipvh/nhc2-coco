@@ -11,7 +11,7 @@ class CoCoLight(CoCoEntity):
 
     @property
     def is_on(self):
-        return self._state
+        return self._is_on
 
     @property
     def brightness(self):
@@ -23,6 +23,7 @@ class CoCoLight(CoCoEntity):
 
     def __init__(self, dev, callback_container, client, profile_creation_id, command_device_control):
         super().__init__(dev, callback_container, client, profile_creation_id, command_device_control)
+        self._is_on = None
         self._brightness = None
         self.update_dev(dev, callback_container)
 
@@ -41,8 +42,8 @@ class CoCoLight(CoCoEntity):
     def update_dev(self, dev, callback_container=None):
         has_changed = super().update_dev(dev, callback_container)
         status_value = extract_property_value_from_device(dev, KEY_STATUS)
-        if status_value and self._state != (status_value == VALUE_ON):
-            self._state = (status_value == VALUE_ON)
+        if status_value and self._is_on != (status_value == VALUE_ON):
+            self._is_on = (status_value == VALUE_ON)
             has_changed = True
         if self.support_brightness:
             brightness_value = extract_property_value_from_device(dev, KEY_BRIGHTNESS)

@@ -5,3 +5,4 @@ class CoCoDeviceClass(Enum):
     SWITCHES = 'switches'
     LIGHTS = 'lights'
     SHUTTERS = 'shutters'
+    FANS = 'fans'

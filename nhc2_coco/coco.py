@@ -8,6 +8,7 @@ from typing import Callable
 import paho.mqtt.client as mqtt
 
 from .coco_device_class import CoCoDeviceClass
+from .coco_fan import CoCoFan
 from .coco_light import CoCoLight
 from .coco_shutter import CoCoShutter
 from .coco_switch import CoCoSwitch
@@ -17,12 +18,13 @@ from .const import MQTT_PROTOCOL, MQTT_TRANSPORT, MQTT_TOPIC_PUBLIC_RSP, MQTT_TO
     KEY_METHOD, MQTT_METHOD_DEVICES_LIST, MQTT_METHOD_SYSINFO_PUBLISHED, MQTT_METHOD_DEVICES_STATUS, \
     MQTT_METHOD_DEVICES_CHANGED, LIST_VALID_SWITCHES, LIST_VALID_LIGHTS, MQTT_CERT_FILE, \
     DEVICE_CONTROL_BUFFER_COMMAND_SIZE, DEVICE_CONTROL_BUFFER_SIZE, \
-    INTERNAL_KEY_MODELS, INTERNAL_KEY_CLASS, LIST_VALID_SHUTTERS
+    INTERNAL_KEY_MODELS, INTERNAL_KEY_CLASS, LIST_VALID_SHUTTERS, LIST_VALID_FANS
 from .helpers import extract_devices, process_device_commands
 
 _LOGGER = logging.getLogger(__name__)
 sem = threading.Semaphore()
 DEVICE_SETS = {
+    CoCoDeviceClass.FANS: {INTERNAL_KEY_CLASS: CoCoFan, INTERNAL_KEY_MODELS: LIST_VALID_FANS},
     CoCoDeviceClass.SHUTTERS: {INTERNAL_KEY_CLASS: CoCoShutter, INTERNAL_KEY_MODELS: LIST_VALID_SHUTTERS},
     CoCoDeviceClass.SWITCHES: {INTERNAL_KEY_CLASS: CoCoSwitch, INTERNAL_KEY_MODELS: LIST_VALID_SWITCHES},
     CoCoDeviceClass.LIGHTS: {INTERNAL_KEY_CLASS: CoCoLight, INTERNAL_KEY_MODELS: LIST_VALID_LIGHTS}
@@ -184,6 +186,7 @@ class CoCo:
                     {INTERNAL_KEY_CALLBACK: None, KEY_ENTITY: None}
 
         # Initialize
+        self.initialize_devices(CoCoDeviceClass.FANS, actionable_devices)
         self.initialize_devices(CoCoDeviceClass.SWITCHES, actionable_devices)
         self.initialize_devices(CoCoDeviceClass.LIGHTS, actionable_devices)
         self.initialize_devices(CoCoDeviceClass.SHUTTERS, actionable_devices)
