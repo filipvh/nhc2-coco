@@ -21,8 +21,8 @@ class CoCoFan(CoCoEntity):
     def update_dev(self, dev, callback_container=None):
         has_changed = super().update_dev(dev, callback_container)
         status_value = extract_property_value_from_device(dev, KEY_FAN_SPEED)
-        if status_value and self._fan_speed != CoCoFanSpeed((status_value,)):
-            self._fan_speed = CoCoFanSpeed((status_value,))
+        if status_value and self._fan_speed != CoCoFanSpeed(status_value):
+            self._fan_speed = CoCoFanSpeed(status_value)
             has_changed = True
         return has_changed
 
