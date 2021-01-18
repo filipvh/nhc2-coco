@@ -16,6 +16,7 @@ LIST_VALID_SWITCHES = ['socket', 'switched-generic']
 LIST_VALID_SHUTTERS = ['rolldownshutter', 'sunblind', 'gate', 'venetianblind']
 LIST_VALID_FANS = ['fan']
 LIST_VALID_SWITCHED_FANS = ['switched-fan']
+LIST_VALID_THERMOSTATS = ['thermostat']
 
 DEVICE_CONTROL_BUFFER_SIZE = 16
 DEVICE_CONTROL_BUFFER_COMMAND_SIZE = 32
@@ -42,6 +43,12 @@ VALUE_OFF = 'Off'
 VALUE_OPEN = 'Open'
 VALUE_STOP = 'Stop'
 VALUE_CLOSE = 'Close'
+
+THERM_PROGRAM = 'Program'
+THERM_OVERRULEACTION = 'OverruleActive'
+THERM_OVERRULESETPOINT = 'OverruleSetpoint'
+THERM_OVERRULETIME = 'OverruleTime'
+THERM_ECOSAVE = 'EcoSave'
 
 DEV_TYPE_ACTION = 'action'
 
