@@ -16,10 +16,19 @@ def extract_property_value_from_device(device, property_key):
                 return property_object[property_key]
     return None
 
+def extract_property_definitions(response, parameter):
+    if response and 'PropertyDefinitions' in response:
+        properties = response['PropertyDefinitions']
+        if properties:
+            return next(filter((lambda x: x and parameter in x), properties), None)[parameter]
+    else:
+        return None
+
+def status_prop_in_object_is_on(property_object_with_status):
+    return property_object_with_status['Status'] == 'On'
 
 def dev_prop_changed(field, dev, prop):
     return prop in dev and field != dev[prop]
-
 
 def process_device_commands(device_commands_to_process):
     devices = []
