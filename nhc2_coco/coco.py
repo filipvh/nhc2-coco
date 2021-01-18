@@ -13,6 +13,7 @@ from .coco_light import CoCoLight
 from .coco_shutter import CoCoShutter
 from .coco_switch import CoCoSwitch
 from .coco_switched_fan import CoCoSwitchedFan
+from .coco_climate import CoCoThermostat
 from .const import *
 from .helpers import *
 
@@ -23,7 +24,8 @@ DEVICE_SETS = {
     CoCoDeviceClass.FANS: {INTERNAL_KEY_CLASS: CoCoFan, INTERNAL_KEY_MODELS: LIST_VALID_FANS},
     CoCoDeviceClass.SHUTTERS: {INTERNAL_KEY_CLASS: CoCoShutter, INTERNAL_KEY_MODELS: LIST_VALID_SHUTTERS},
     CoCoDeviceClass.SWITCHES: {INTERNAL_KEY_CLASS: CoCoSwitch, INTERNAL_KEY_MODELS: LIST_VALID_SWITCHES},
-    CoCoDeviceClass.LIGHTS: {INTERNAL_KEY_CLASS: CoCoLight, INTERNAL_KEY_MODELS: LIST_VALID_LIGHTS}
+    CoCoDeviceClass.LIGHTS: {INTERNAL_KEY_CLASS: CoCoLight, INTERNAL_KEY_MODELS: LIST_VALID_LIGHTS},
+    CoCoDeviceClass.THERMOSTATS: {INTERNAL_KEY_CLASS: CoCoThermostat, INTERNAL_KEY_MODELS: LIST_VALID_THERMOSTATS}
 }
 
 
@@ -172,6 +174,8 @@ class CoCo:
         # Only add devices that are actionable
         actionable_devices = list(
             filter(lambda d: d[KEY_TYPE] == DEV_TYPE_ACTION, extract_devices(response)))
+        actionable_devices.extend(list(
+            filter(lambda d: d[KEY_TYPE] == "thermostat", extract_devices(response))))
 
         # Only prepare for devices that don't already exist
         # TODO - Can't we do this when we need it (in initialize_devices ?)
@@ -187,6 +191,7 @@ class CoCo:
         self.initialize_devices(CoCoDeviceClass.SWITCHES, actionable_devices)
         self.initialize_devices(CoCoDeviceClass.LIGHTS, actionable_devices)
         self.initialize_devices(CoCoDeviceClass.SHUTTERS, actionable_devices)
+        self.initialize_devices(CoCoDeviceClass.THERMOSTATS, actionable_devices)
 
     def initialize_devices(self, device_class, actionable_devices):
 
