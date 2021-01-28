@@ -16,6 +16,7 @@ LIST_VALID_SWITCHES = ['socket', 'switched-generic']
 LIST_VALID_SHUTTERS = ['rolldownshutter', 'sunblind', 'gate', 'venetianblind']
 LIST_VALID_FANS = ['fan']
 LIST_VALID_SWITCHED_FANS = ['switched-fan']
+LIST_VALID_GENERICS = ['generic']
 
 DEVICE_CONTROL_BUFFER_SIZE = 16
 DEVICE_CONTROL_BUFFER_COMMAND_SIZE = 32
@@ -36,12 +37,14 @@ KEY_POSITION = 'Position'
 KEY_STATUS = 'Status'
 KEY_TYPE = 'Type'
 KEY_UUID = 'Uuid'
+KEY_BASICSTATE = "BasicState"
 
 VALUE_ON = 'On'
 VALUE_OFF = 'Off'
 VALUE_OPEN = 'Open'
 VALUE_STOP = 'Stop'
 VALUE_CLOSE = 'Close'
+VALUE_TRIGGERED = 'Triggered'
 
 DEV_TYPE_ACTION = 'action'
 
