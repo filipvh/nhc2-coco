@@ -14,6 +14,8 @@ from .coco_shutter import CoCoShutter
 from .coco_switch import CoCoSwitch
 from .coco_switched_fan import CoCoSwitchedFan
 from .coco_climate import CoCoThermostat
+from .coco_generic import CoCoGeneric
+
 from .const import *
 from .helpers import *
 
@@ -26,6 +28,7 @@ DEVICE_SETS = {
     CoCoDeviceClass.SWITCHES: {INTERNAL_KEY_CLASS: CoCoSwitch, INTERNAL_KEY_MODELS: LIST_VALID_SWITCHES},
     CoCoDeviceClass.LIGHTS: {INTERNAL_KEY_CLASS: CoCoLight, INTERNAL_KEY_MODELS: LIST_VALID_LIGHTS},
     CoCoDeviceClass.THERMOSTATS: {INTERNAL_KEY_CLASS: CoCoThermostat, INTERNAL_KEY_MODELS: LIST_VALID_THERMOSTATS}
+    CoCoDeviceClass.GENERIC: {INTERNAL_KEY_CLASS: CoCoGeneric, INTERNAL_KEY_MODELS: LIST_VALID_GENERICS}
 }
 
 
@@ -192,6 +195,7 @@ class CoCo:
         self.initialize_devices(CoCoDeviceClass.LIGHTS, actionable_devices)
         self.initialize_devices(CoCoDeviceClass.SHUTTERS, actionable_devices)
         self.initialize_devices(CoCoDeviceClass.THERMOSTATS, actionable_devices)
+        self.initialize_devices(CoCoDeviceClass.GENERIC, actionable_devices)
 
     def initialize_devices(self, device_class, actionable_devices):
 

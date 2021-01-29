@@ -11,6 +11,24 @@ coco = CoCo(HOST, USER, PASS, port=PORT)
 coco.connect()
 
 
+def generics(all):
+    print('generics')
+    def light_changed(generic):
+        def callback():
+            base_state = 'ON' if generic.is_on else 'OFF'
+            print('State of generic %s has changed to %s' % (generic.name, base_state))
+        return callback
+
+    for generic in all:
+        generic.on_change = light_changed(generic)
+
+    print()
+    print("Found %d generic(s) on the CoCo" % len(all))
+    for generic in all:
+        base_state = 'ON' if generic.is_on else 'OFF'
+        print("[ %s ] is at %s" % (generic.name, base_state))
+
+
 def shutters(all):
     print()
     print("Found %d shutter(s) on the CoCo" % len(all))
@@ -63,3 +81,4 @@ def lights(all):
 coco.get_devices(CoCoDeviceClass.SHUTTERS, shutters)
 coco.get_devices(CoCoDeviceClass.SWITCHES, switches)
 coco.get_devices(CoCoDeviceClass.LIGHTS, lights)
+coco.get_devices(CoCoDeviceClass.GENERIC, generics)

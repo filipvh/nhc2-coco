@@ -8,3 +8,4 @@ class CoCoDeviceClass(Enum):
     FANS = 'fans'
     SWITCHED_FANS = 'switched-fans'
     THERMOSTATS = 'thermostats'
+    GENERIC = 'generic'
