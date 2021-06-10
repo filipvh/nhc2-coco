@@ -7,4 +7,5 @@ class CoCoDeviceClass(Enum):
     SHUTTERS = 'shutters'
     FANS = 'fans'
     SWITCHED_FANS = 'switched-fans'
+    THERMOSTATS = 'thermostats'
     GENERIC = 'generic'
