@@ -127,3 +127,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+nhc2_coco/.vs/slnx.sqlite
+nhc2_coco/.vs/ProjectSettings.json
