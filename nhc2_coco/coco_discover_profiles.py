@@ -54,8 +54,9 @@ class CoCoDiscoverProfiles:
                          self._done_discovering_profiles_callback)
 
     def _done_discovering_profiles_callback(self):
-        if len(self._controllers_found) == len(self._profiles_found):
-            loop.call_soon_threadsafe(callback=self._done)
+        while len(self._controllers_found) != len(self._profiles_found):
+            time.sleep(1)
+        loop.call_soon_threadsafe(callback=self._done)
 
     def _discover_controllers_callback(self, address, mac, is_nhc2):
         if (is_nhc2):
