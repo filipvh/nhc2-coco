@@ -17,6 +17,7 @@ LIST_VALID_SHUTTERS = ['rolldownshutter', 'sunblind', 'gate', 'venetianblind']
 LIST_VALID_FANS = ['fan']
 LIST_VALID_SWITCHED_FANS = ['switched-fan']
 LIST_VALID_THERMOSTATS = ['thermostat']
+LIST_VALID_ENERGYMETERS = ['electricity-clamp']
 LIST_VALID_GENERICS = ['generic']
 
 DEVICE_CONTROL_BUFFER_SIZE = 16
@@ -52,6 +53,9 @@ THERM_OVERRULEACTION = 'OverruleActive'
 THERM_OVERRULESETPOINT = 'OverruleSetpoint'
 THERM_OVERRULETIME = 'OverruleTime'
 THERM_ECOSAVE = 'EcoSave'
+
+ENERGY_REPORT = 'ReportInstantUsage'
+ENERGY_POWER = 'ElectricalPower'
 
 DEV_TYPE_ACTION = 'action'
 
